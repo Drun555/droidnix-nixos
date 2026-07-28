@@ -1,5 +1,10 @@
 { lib, pkgs, ... }:
 
+let
+  droidspacesNixosInit = pkgs.writeShellScript "droidspaces-nixos-init" ''
+    exec /nix/var/nix/profiles/system/init "$@"
+  '';
+in
 {
   boot.isContainer = true;
   system.stateVersion = "26.05";
@@ -79,6 +84,15 @@
   
   nix.settings.sandbox = false;
   environment.localBinInPath = true;
+
+  # DroidSpaces validates its init path from the Android host before entering
+  # the container. A direct path through the Nix system profile contains an
+  # absolute symlink that cannot be resolved correctly from the host. Keep a
+  # regular wrapper file in /sbin and resolve the current profile only after
+  # the container has started.
+  system.activationScripts.droidspacesNixosInit.text = ''
+    install -Dm755 ${droidspacesNixosInit} /sbin/droidspaces-nixos-init
+  '';
 
   environment.systemPackages = with pkgs; [
     git

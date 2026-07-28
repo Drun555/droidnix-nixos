@@ -12,6 +12,17 @@ The Android/DroidSpaces host owns the device hardware, boot process, kernel, and
 network setup. Changes to this repository should preserve the container-specific
 assumptions documented in `agent-bootstrap.nix`.
 
+Set the container's Init field in DroidSpaces to:
+
+```text
+/sbin/droidspaces-nixos-init
+```
+
+This regular wrapper file is maintained by NixOS activation and starts the
+current `/nix/var/nix/profiles/system/init` from inside the container. Do not
+point DroidSpaces directly at the system profile: its absolute symlink cannot be
+resolved correctly while DroidSpaces validates it from the Android host.
+
 ## GNOME through Termux:X11
 
 GNOME Shell in this NixOS release is Wayland-only, so the X11 desktop uses GNOME
