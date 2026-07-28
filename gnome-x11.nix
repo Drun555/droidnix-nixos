@@ -20,7 +20,10 @@ let
 
   startGnome = pkgs.writeShellApplication {
     name = "start-gnome-x11";
-    runtimeInputs = [ pkgs.systemd ];
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.systemd
+    ];
     text = ''
       systemctl --user import-environment \
         DBUS_SESSION_BUS_ADDRESS \
@@ -33,6 +36,13 @@ let
         XDG_RUNTIME_DIR 2>/dev/null || true
 
       systemctl --user restart gnome-termux-x11.service
+      sleep 1
+
+      if ! systemctl --user is-active --quiet gnome-termux-x11.service; then
+        journalctl --user -u gnome-termux-x11.service --no-pager -n 20
+        exit 1
+      fi
+
       systemctl --user --no-pager --full status gnome-termux-x11.service
     '';
   };

@@ -2,7 +2,9 @@ set -euo pipefail
 
 if [[ -z "${DISPLAY:-}" ]]; then
   socket="$(
-    find /tmp/.X11-unix -maxdepth 1 -type s -name 'X*' -printf '%f\n' 2>/dev/null \
+    # Android-owned Unix sockets are not reliably matched by GNU find's
+    # `-type s` from inside DroidSpaces. xdpyinfo validates the candidate below.
+    find /tmp/.X11-unix -maxdepth 1 -name 'X*' -printf '%f\n' 2>/dev/null \
       | sort -V \
       | tail -n 1
   )"
