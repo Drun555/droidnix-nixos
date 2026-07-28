@@ -2,6 +2,7 @@ set -euo pipefail
 
 if [[ -r /run/droidspaces.env ]]; then
   # DroidSpaces injects DISPLAY and the host PulseAudio socket here.
+  # shellcheck disable=SC1091
   source /run/droidspaces.env
 fi
 

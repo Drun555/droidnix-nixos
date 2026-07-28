@@ -29,7 +29,8 @@ GNOME Shell in this NixOS release is Wayland-only, so the X11 desktop uses GNOME
 Flashback with Metacity. Termux:X11 supplies the X server; the container does not
 start GDM or its own Xorg server.
 
-Start Termux:X11 first, then run this inside `droidnix`:
+Opening Termux:X11 automatically starts the GNOME session when its X11 socket
+appears. The launcher remains available for manual restarts:
 
 ```console
 start-gnome-x11

@@ -60,6 +60,7 @@ in
       agent = {
         isNormalUser = true;
         description = "NixOS configuration agent";
+        linger = true;
         extraGroups = [
           "wheel"
           "aid_inet"

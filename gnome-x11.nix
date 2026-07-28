@@ -140,10 +140,23 @@ in
     description = "GNOME Flashback session on Termux:X11";
     after = [ "dbus.socket" ];
     wants = [ "dbus.socket" ];
+    unitConfig.StartLimitIntervalSec = 0;
     serviceConfig = {
       Type = "simple";
       ExecStart = lib.getExe gnomeTermuxSession;
-      Restart = "no";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+  };
+
+  # A lingering user manager watches for the Android-owned X11 socket, so
+  # opening Termux:X11 is enough to start the GNOME session.
+  systemd.user.paths.gnome-termux-x11 = {
+    description = "Watch for the Termux:X11 socket";
+    wantedBy = [ "default.target" ];
+    pathConfig = {
+      PathExists = "/tmp/.X11-unix/X5";
+      Unit = "gnome-termux-x11.service";
     };
   };
 }
