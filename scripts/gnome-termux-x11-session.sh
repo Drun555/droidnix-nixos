@@ -55,19 +55,26 @@ export XDG_SESSION_TYPE=x11
 export XDG_SESSION_DESKTOP=gnome-flashback-metacity
 export XDG_CURRENT_DESKTOP=GNOME-Flashback:GNOME
 export GDK_BACKEND=x11
+export GDK_SCALE="$scale"
 export QT_QPA_PLATFORM=xcb
 export QT_SCALE_FACTOR="$scale"
 export XCURSOR_SIZE="$((24 * scale))"
 
 xrandr --display "$DISPLAY" --dpi "$dpi" || true
-gsettings set org.gnome.desktop.interface scaling-factor "$scale"
-gsettings set org.gnome.desktop.interface text-scaling-factor "$text_scale"
-gsettings set org.gnome.desktop.interface cursor-size "$((24 * scale))"
+
+apply_gnome_scale() {
+  gsettings set org.gnome.desktop.interface scaling-factor "$scale"
+  gsettings set org.gnome.desktop.interface text-scaling-factor "$text_scale"
+  gsettings set org.gnome.desktop.interface cursor-size "$((24 * scale))"
+}
+
+apply_gnome_scale
 
 systemctl --user import-environment \
   DBUS_SESSION_BUS_ADDRESS \
   DISPLAY \
   GDK_BACKEND \
+  GDK_SCALE \
   QT_QPA_PLATFORM \
   QT_SCALE_FACTOR \
   XCURSOR_SIZE \
@@ -80,6 +87,7 @@ dbus-update-activation-environment --systemd \
   DBUS_SESSION_BUS_ADDRESS \
   DISPLAY \
   GDK_BACKEND \
+  GDK_SCALE \
   QT_QPA_PLATFORM \
   QT_SCALE_FACTOR \
   XCURSOR_SIZE \
@@ -87,6 +95,13 @@ dbus-update-activation-environment --systemd \
   XDG_RUNTIME_DIR \
   XDG_SESSION_DESKTOP \
   XDG_SESSION_TYPE
+
+# GNOME settings services initialize asynchronously and can replace interface
+# defaults once during startup. Reapply the chosen values after they are ready.
+(
+  sleep 3
+  apply_gnome_scale
+) &
 
 echo "Starting GNOME Flashback on $DISPLAY (${width:-unknown}px wide, scale ${scale}x, ${dpi} DPI)."
 exec gnome-session --session=gnome-flashback-metacity
