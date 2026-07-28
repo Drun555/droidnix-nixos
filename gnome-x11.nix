@@ -89,6 +89,7 @@ in
   ];
 
   environment.systemPackages = with pkgs; [
+    cosmic-files
     firefox
     gnomeTermuxSession
     lite-xl
