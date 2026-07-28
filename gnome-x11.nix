@@ -1,6 +1,17 @@
 { lib, pkgs, ... }:
 
 let
+  mesaForAndroidContainer =
+    pkgs.callPackage ./packages/mesa-for-android-container.nix { };
+  mesaForAndroidLib = "${mesaForAndroidContainer}/lib";
+  mesaForAndroidEgl =
+    "${mesaForAndroidContainer}/share/glvnd/egl_vendor.d/50_mesa.json";
+  mesaForAndroidVulkan =
+    "${mesaForAndroidContainer}/share/vulkan/icd.d/freedreno_icd.aarch64.json";
+  vivaldiWithCodecs = pkgs.vivaldi.override {
+    proprietaryCodecs = true;
+  };
+
   gnomeTermuxSession = pkgs.writeShellApplication {
     name = "gnome-termux-x11-session";
     runtimeInputs = with pkgs; [
@@ -15,7 +26,18 @@ let
       xdpyinfo
       xrandr
     ];
-    text = builtins.readFile ./scripts/gnome-termux-x11-session.sh;
+    text = builtins.replaceStrings
+      [
+        "@mesaForAndroidEgl@"
+        "@mesaForAndroidLib@"
+        "@mesaForAndroidVulkan@"
+      ]
+      [
+        mesaForAndroidEgl
+        mesaForAndroidLib
+        mesaForAndroidVulkan
+      ]
+      (builtins.readFile ./scripts/gnome-termux-x11-session.sh);
   };
 
   startGnome = pkgs.writeShellApplication {
@@ -35,13 +57,16 @@ let
         DBUS_SESSION_BUS_ADDRESS \
         GI_TYPELIB_PATH \
         LD_LIBRARY_PATH \
+        LIBGL_DRIVERS_PATH \
         NIX_GSETTINGS_OVERRIDES_DIR \
         PATH \
         PULSE_SERVER \
+        VK_ICD_FILENAMES \
         XDG_CONFIG_DIRS \
         XDG_DATA_DIRS \
         XDG_MENU_PREFIX \
-        XDG_RUNTIME_DIR 2>/dev/null || true
+        XDG_RUNTIME_DIR \
+        __EGL_VENDOR_LIBRARY_FILENAMES 2>/dev/null || true
 
       systemctl --user restart gnome-termux-x11.service
       sleep 1
@@ -84,12 +109,15 @@ in
   services.hardware.bolt.enable = lib.mkForce false;
   services.power-profiles-daemon.enable = lib.mkForce false;
 
-  # Mesa 26.1 in nixpkgs includes the KGSL backend used by
-  # Turnip/Freedreno on Qualcomm Adreno GPUs.
+  # Use the DroidSpaces-compatible Mesa build. Upstream Mesa contains KGSL,
+  # but still lacks the Android-container patches required by Termux:X11.
   hardware.graphics.enable = true;
   environment.variables = {
+    __EGL_VENDOR_LIBRARY_FILENAMES = mesaForAndroidEgl;
+    LIBGL_DRIVERS_PATH = "${mesaForAndroidLib}/dri";
     MESA_LOADER_DRIVER_OVERRIDE = "kgsl";
     TU_DEBUG = "noconform";
+    VK_ICD_FILENAMES = mesaForAndroidVulkan;
   };
 
   nixpkgs.config.allowUnfreePredicate =
@@ -112,13 +140,15 @@ in
     ghostty
     gnomeTermuxSession
     lite-xl
+    mesaForAndroidContainer
     mesa-demos
     nautilus
     pulseaudio
+    sound-theme-freedesktop
     startGnome
     stopGnome
     telegram-desktop
-    vivaldi
+    vivaldiWithCodecs
     vscodium
     vulkan-tools
     xterm

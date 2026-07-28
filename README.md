@@ -57,10 +57,12 @@ desktop entries and icons are linked into the GNOME application menu.
 
 ## Native Adreno graphics and Android audio
 
-The OnePlus Pad 3 exposes an Adreno 830 GPU as `/dev/kgsl-3d0`. Nixpkgs Mesa
-26.1 is built with the Freedreno KGSL backend and provides native Turnip support.
+The OnePlus Pad 3 exposes an Adreno 830 GPU as `/dev/kgsl-3d0`. The configuration
+pins the Android-container-patched Mesa/Turnip release
+`26.2.0-devel-20260709` from
+[Mesa For Android Container](https://github.com/lfdevs/mesa-for-android-container).
 The `agent` user belongs to the `droidspaces-gpu` group, and the GNOME launcher
-sets `MESA_LOADER_DRIVER_OVERRIDE=kgsl` and `TU_DEBUG=noconform`.
+selects its KGSL, EGL, and Vulkan drivers explicitly.
 
 In the DroidSpaces container settings:
 
@@ -69,5 +71,5 @@ In the DroidSpaces container settings:
 - enable **Configure PulseAudio**.
 
 DroidSpaces supplies the X11 and PulseAudio sockets. The NixOS configuration
-installs `glxinfo`, `vulkaninfo`, `pactl`, and `paplay` for verification. It
-does not start a second PulseAudio server inside the container.
+installs `glxinfo`, `vulkaninfo`, `pactl`, `paplay`, and a test sound theme for
+verification. It does not start a second PulseAudio server inside the container.

@@ -13,6 +13,9 @@ export XDG_DATA_DIRS="/run/current-system/sw/share:/etc/profiles/per-user/$profi
 export XDG_MENU_PREFIX="gnome-flashback-"
 export MESA_LOADER_DRIVER_OVERRIDE=kgsl
 export TU_DEBUG=noconform
+export LIBGL_DRIVERS_PATH="@mesaForAndroidLib@/dri"
+export __EGL_VENDOR_LIBRARY_FILENAMES="@mesaForAndroidEgl@"
+export VK_ICD_FILENAMES="@mesaForAndroidVulkan@"
 unset GALLIUM_DRIVER
 
 if [[ -z "${DISPLAY:-}" ]]; then
@@ -85,11 +88,13 @@ systemctl --user import-environment \
   DISPLAY \
   GDK_BACKEND \
   GDK_SCALE \
+  LIBGL_DRIVERS_PATH \
   MESA_LOADER_DRIVER_OVERRIDE \
   PULSE_SERVER \
   QT_QPA_PLATFORM \
   QT_SCALE_FACTOR \
   TU_DEBUG \
+  VK_ICD_FILENAMES \
   XCURSOR_SIZE \
   XDG_CURRENT_DESKTOP \
   XDG_CONFIG_DIRS \
@@ -97,18 +102,21 @@ systemctl --user import-environment \
   XDG_MENU_PREFIX \
   XDG_RUNTIME_DIR \
   XDG_SESSION_DESKTOP \
-  XDG_SESSION_TYPE
+  XDG_SESSION_TYPE \
+  __EGL_VENDOR_LIBRARY_FILENAMES
 
 dbus-update-activation-environment --systemd \
   DBUS_SESSION_BUS_ADDRESS \
   DISPLAY \
   GDK_BACKEND \
   GDK_SCALE \
+  LIBGL_DRIVERS_PATH \
   MESA_LOADER_DRIVER_OVERRIDE \
   PULSE_SERVER \
   QT_QPA_PLATFORM \
   QT_SCALE_FACTOR \
   TU_DEBUG \
+  VK_ICD_FILENAMES \
   XCURSOR_SIZE \
   XDG_CURRENT_DESKTOP \
   XDG_CONFIG_DIRS \
@@ -116,7 +124,8 @@ dbus-update-activation-environment --systemd \
   XDG_MENU_PREFIX \
   XDG_RUNTIME_DIR \
   XDG_SESSION_DESKTOP \
-  XDG_SESSION_TYPE
+  XDG_SESSION_TYPE \
+  __EGL_VENDOR_LIBRARY_FILENAMES
 
 # GNOME settings services initialize asynchronously and can replace interface
 # defaults once during startup. Reapply the chosen values after they are ready.
