@@ -66,6 +66,8 @@ apply_gnome_scale() {
   gsettings set org.gnome.desktop.interface scaling-factor "$scale"
   gsettings set org.gnome.desktop.interface text-scaling-factor "$text_scale"
   gsettings set org.gnome.desktop.interface cursor-size "$((24 * scale))"
+  gsettings set org.gnome.desktop.screensaver lock-enabled false
+  gsettings set org.gnome.desktop.session idle-delay 0
 }
 
 apply_gnome_scale

@@ -76,10 +76,26 @@ in
   services.hardware.bolt.enable = lib.mkForce false;
   services.power-profiles-daemon.enable = lib.mkForce false;
 
+  # Android already provides the outer device lock screen. A locked GNOME
+  # screen is not useful here because the declarative agent account has no
+  # local password by default.
+  programs.dconf.profiles.user.databases = [
+    {
+      settings = {
+        "org/gnome/desktop/screensaver".lock-enabled = false;
+        "org/gnome/desktop/session".idle-delay = lib.gvariant.mkUint32 0;
+      };
+    }
+  ];
+
   environment.systemPackages = with pkgs; [
+    firefox
     gnomeTermuxSession
+    lite-xl
     startGnome
     stopGnome
+    telegram-desktop
+    vscodium
     xterm
   ];
 

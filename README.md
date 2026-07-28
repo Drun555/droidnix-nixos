@@ -32,3 +32,10 @@ for the OnePlus Pad 3 native display. Override it when needed:
 GNOME_SCALE=2 start-gnome-x11
 stop-gnome-x11
 ```
+
+The nested GNOME session does not lock itself or blank on idle because Android
+provides the outer device lock screen.
+
+The desktop includes Firefox, Lite XL, VSCodium, and Telegram Desktop. Lite XL
+is the lightweight editor, while VSCodium provides a larger IDE-style
+environment without Microsoft's proprietary distribution.
