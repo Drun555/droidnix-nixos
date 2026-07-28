@@ -35,22 +35,38 @@ Start Termux:X11 first, then run this inside `droidnix`:
 start-gnome-x11
 ```
 
-The launcher detects the active display socket. It uses scale `1` below 1800
-pixels of display width and scale `2` at higher resolutions, which is suitable
-for the OnePlus Pad 3 native display. Override it when needed:
+The launcher detects the active display socket. Its tablet-friendly default is
+125%: integer application scale `1`, text and Qt scale `1.25`, and 120 DPI.
+Override it when needed:
 
 ```console
 GNOME_SCALE=2 start-gnome-x11
+GNOME_TEXT_SCALE=1.0 GNOME_DPI=96 start-gnome-x11
 stop-gnome-x11
 ```
 
 The nested GNOME session does not lock itself or blank on idle because Android
 provides the outer device lock screen.
 
-The desktop includes GNOME Files (Nautilus), COSMIC Files, Firefox, Lite XL,
-VSCodium, and Telegram Desktop. GNOME Files is the default file manager;
-COSMIC Files is also available as an alternative, although its current renderer
-is incompatible with the Termux:X11 visual used by this device. Lite XL is the
-lightweight editor, while VSCodium provides a larger IDE-style environment
-without Microsoft's proprietary distribution. Their desktop entries and icons
-are linked into the GNOME application menu.
+The desktop includes GNOME Files (Nautilus), Firefox, Vivaldi, Lite XL,
+VSCodium, Telegram Desktop, and Ghostty. GNOME Files is the default file
+manager. Lite XL is the lightweight editor, while VSCodium provides a larger
+IDE-style environment without Microsoft's proprietary distribution. Their
+desktop entries and icons are linked into the GNOME application menu.
+
+## Native Adreno graphics and Android audio
+
+The OnePlus Pad 3 exposes an Adreno 830 GPU as `/dev/kgsl-3d0`. Nixpkgs Mesa
+26.1 is built with the Freedreno KGSL backend and provides native Turnip support.
+The `agent` user belongs to the `droidspaces-gpu` group, and the GNOME launcher
+sets `MESA_LOADER_DRIVER_OVERRIDE=kgsl` and `TU_DEBUG=noconform`.
+
+In the DroidSpaces container settings:
+
+- enable **GPU Access** and **Configure Termux:X11**;
+- disable **Configure VirGL 3D Acceleration**;
+- enable **Configure PulseAudio**.
+
+DroidSpaces supplies the X11 and PulseAudio sockets. The NixOS configuration
+installs `glxinfo`, `vulkaninfo`, `pactl`, and `paplay` for verification. It
+does not start a second PulseAudio server inside the container.

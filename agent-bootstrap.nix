@@ -38,6 +38,7 @@ in
     aid_inet.gid = 3003;
     aid_net_raw.gid = 3004;
     aid_net_admin.gid = 3005;
+    droidspaces-gpu.gid = 786;
   };
 
   # Android gates Internet access by supplementary group. Nix fixed-output
@@ -53,6 +54,7 @@ in
         "aid_inet"
         "aid_net_raw"
         "aid_net_admin"
+        "droidspaces-gpu"
       ];
 
       agent = {
@@ -63,6 +65,7 @@ in
           "aid_inet"
           "aid_net_raw"
           "aid_net_admin"
+          "droidspaces-gpu"
         ];
         shell = pkgs.bashInteractive;
 
@@ -81,7 +84,11 @@ in
     "nix-command"
     "flakes"
   ];
-  
+
+  # Android exposes IPv6 DNS results even when the container cannot route
+  # them reliably. Fixed-output fetchers should use the working IPv4 path.
+  nix.envVars.NIX_CURL_FLAGS = "--ipv4";
+
   nix.settings.sandbox = false;
   environment.localBinInPath = true;
 

@@ -1,10 +1,18 @@
 set -euo pipefail
 
+if [[ -r /run/droidspaces.env ]]; then
+  # DroidSpaces injects DISPLAY and the host PulseAudio socket here.
+  source /run/droidspaces.env
+fi
+
 profile_user="${USER:-$(id -un)}"
 export PATH="/run/current-system/sw/bin:/etc/profiles/per-user/$profile_user/bin:$PATH"
 export XDG_CONFIG_DIRS="/etc/xdg:/run/current-system/sw/etc/xdg${XDG_CONFIG_DIRS:+:$XDG_CONFIG_DIRS}"
 export XDG_DATA_DIRS="/run/current-system/sw/share:/etc/profiles/per-user/$profile_user/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
 export XDG_MENU_PREFIX="gnome-flashback-"
+export MESA_LOADER_DRIVER_OVERRIDE=kgsl
+export TU_DEBUG=noconform
+unset GALLIUM_DRIVER
 
 if [[ -z "${DISPLAY:-}" ]]; then
   socket="$(
@@ -40,22 +48,15 @@ width="$(
     | head -n 1
 )"
 
-scale="${GNOME_SCALE:-}"
-if [[ -z "$scale" ]]; then
-  if [[ -n "$width" ]] && (( width >= 1800 )); then
-    scale=2
-  else
-    scale=1
-  fi
-fi
+scale="${GNOME_SCALE:-1}"
 
 if [[ "$scale" != 1 && "$scale" != 2 ]]; then
   echo "GNOME_SCALE must be either 1 or 2." >&2
   exit 2
 fi
 
-text_scale="${GNOME_TEXT_SCALE:-1.0}"
-dpi=$((96 * scale))
+text_scale="${GNOME_TEXT_SCALE:-1.25}"
+dpi="${GNOME_DPI:-120}"
 
 export XDG_SESSION_TYPE=x11
 export XDG_SESSION_DESKTOP=gnome-flashback-metacity
@@ -63,15 +64,15 @@ export XDG_CURRENT_DESKTOP=GNOME-Flashback:GNOME
 export GDK_BACKEND=x11
 export GDK_SCALE="$scale"
 export QT_QPA_PLATFORM=xcb
-export QT_SCALE_FACTOR="$scale"
-export XCURSOR_SIZE="$((24 * scale))"
+export QT_SCALE_FACTOR="${QT_SCALE_FACTOR:-1.25}"
+export XCURSOR_SIZE="${XCURSOR_SIZE:-32}"
 
 xrandr --display "$DISPLAY" --dpi "$dpi" || true
 
 apply_gnome_scale() {
   gsettings set org.gnome.desktop.interface scaling-factor "$scale"
   gsettings set org.gnome.desktop.interface text-scaling-factor "$text_scale"
-  gsettings set org.gnome.desktop.interface cursor-size "$((24 * scale))"
+  gsettings set org.gnome.desktop.interface cursor-size "$XCURSOR_SIZE"
   gsettings set org.gnome.desktop.screensaver lock-enabled false
   gsettings set org.gnome.desktop.session idle-delay 0
 }
@@ -83,8 +84,11 @@ systemctl --user import-environment \
   DISPLAY \
   GDK_BACKEND \
   GDK_SCALE \
+  MESA_LOADER_DRIVER_OVERRIDE \
+  PULSE_SERVER \
   QT_QPA_PLATFORM \
   QT_SCALE_FACTOR \
+  TU_DEBUG \
   XCURSOR_SIZE \
   XDG_CURRENT_DESKTOP \
   XDG_CONFIG_DIRS \
@@ -99,8 +103,11 @@ dbus-update-activation-environment --systemd \
   DISPLAY \
   GDK_BACKEND \
   GDK_SCALE \
+  MESA_LOADER_DRIVER_OVERRIDE \
+  PULSE_SERVER \
   QT_QPA_PLATFORM \
   QT_SCALE_FACTOR \
+  TU_DEBUG \
   XCURSOR_SIZE \
   XDG_CURRENT_DESKTOP \
   XDG_CONFIG_DIRS \

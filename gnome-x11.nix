@@ -37,6 +37,7 @@ let
         LD_LIBRARY_PATH \
         NIX_GSETTINGS_OVERRIDES_DIR \
         PATH \
+        PULSE_SERVER \
         XDG_CONFIG_DIRS \
         XDG_DATA_DIRS \
         XDG_MENU_PREFIX \
@@ -83,6 +84,17 @@ in
   services.hardware.bolt.enable = lib.mkForce false;
   services.power-profiles-daemon.enable = lib.mkForce false;
 
+  # Mesa 26.1 in nixpkgs includes the KGSL backend used by
+  # Turnip/Freedreno on Qualcomm Adreno GPUs.
+  hardware.graphics.enable = true;
+  environment.variables = {
+    MESA_LOADER_DRIVER_OVERRIDE = "kgsl";
+    TU_DEBUG = "noconform";
+  };
+
+  nixpkgs.config.allowUnfreePredicate =
+    pkg: builtins.elem (lib.getName pkg) [ "vivaldi" ];
+
   # Android already provides the outer device lock screen. A locked GNOME
   # screen is not useful here because the declarative agent account has no
   # local password by default.
@@ -96,15 +108,19 @@ in
   ];
 
   environment.systemPackages = with pkgs; [
-    cosmic-files
     firefox
+    ghostty
     gnomeTermuxSession
     lite-xl
+    mesa-demos
     nautilus
+    pulseaudio
     startGnome
     stopGnome
     telegram-desktop
+    vivaldi
     vscodium
+    vulkan-tools
     xterm
   ];
 
