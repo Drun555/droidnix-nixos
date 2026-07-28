@@ -36,8 +36,8 @@ stop-gnome-x11
 The nested GNOME session does not lock itself or blank on idle because Android
 provides the outer device lock screen.
 
-The desktop includes COSMIC Files, Firefox, Lite XL, VSCodium, and Telegram
-Desktop. COSMIC Files is the default file manager. Lite XL is the lightweight
+The desktop includes GNOME Files (Nautilus), Firefox, Lite XL, VSCodium, and
+Telegram Desktop. GNOME Files is the default file manager. Lite XL is the lightweight
 editor, while VSCodium provides a larger IDE-style environment without
 Microsoft's proprietary distribution. Their desktop entries and icons are
 linked into the GNOME application menu.

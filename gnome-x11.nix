@@ -89,10 +89,10 @@ in
   ];
 
   environment.systemPackages = with pkgs; [
-    cosmic-files
     firefox
     gnomeTermuxSession
     lite-xl
+    nautilus
     startGnome
     stopGnome
     telegram-desktop
@@ -108,7 +108,7 @@ in
   ];
 
   xdg.mime.defaultApplications."inode/directory" = [
-    "com.system76.CosmicFiles.desktop"
+    "org.gnome.Nautilus.desktop"
   ];
 
   systemd.user.services.gnome-termux-x11 = {
