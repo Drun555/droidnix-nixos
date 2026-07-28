@@ -89,6 +89,7 @@ in
   ];
 
   environment.systemPackages = with pkgs; [
+    cosmic-files
     firefox
     gnomeTermuxSession
     lite-xl
@@ -97,6 +98,17 @@ in
     telegram-desktop
     vscodium
     xterm
+  ];
+
+  # Keep graphical applications visible in the GNOME menu, including icons
+  # supplied by packages outside the GNOME module.
+  environment.pathsToLink = [
+    "/share/applications"
+    "/share/icons"
+  ];
+
+  xdg.mime.defaultApplications."inode/directory" = [
+    "com.system76.CosmicFiles.desktop"
   ];
 
   systemd.user.services.gnome-termux-x11 = {
