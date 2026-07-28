@@ -8,5 +8,6 @@
   imports = [
     ./droidspaces-base.nix
     ./agent-bootstrap.nix
+    ./gnome-x11.nix
   ];
 }

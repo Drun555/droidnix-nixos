@@ -1,0 +1,86 @@
+{ lib, pkgs, ... }:
+
+let
+  gnomeTermuxSession = pkgs.writeShellApplication {
+    name = "gnome-termux-x11-session";
+    runtimeInputs = with pkgs; [
+      coreutils
+      dbus
+      findutils
+      glib
+      gnugrep
+      gnused
+      gnome-session
+      systemd
+      xdpyinfo
+      xrandr
+    ];
+    text = builtins.readFile ./scripts/gnome-termux-x11-session.sh;
+  };
+
+  startGnome = pkgs.writeShellApplication {
+    name = "start-gnome-x11";
+    runtimeInputs = [ pkgs.systemd ];
+    text = ''
+      systemctl --user import-environment \
+        DBUS_SESSION_BUS_ADDRESS \
+        GI_TYPELIB_PATH \
+        LD_LIBRARY_PATH \
+        NIX_GSETTINGS_OVERRIDES_DIR \
+        PATH \
+        XDG_CONFIG_DIRS \
+        XDG_DATA_DIRS \
+        XDG_RUNTIME_DIR 2>/dev/null || true
+
+      systemctl --user restart gnome-termux-x11.service
+      systemctl --user --no-pager --full status gnome-termux-x11.service
+    '';
+  };
+
+  stopGnome = pkgs.writeShellApplication {
+    name = "stop-gnome-x11";
+    runtimeInputs = [ pkgs.systemd ];
+    text = "systemctl --user stop gnome-termux-x11.service";
+  };
+in
+{
+  # GNOME Shell 49+ is Wayland-only. Flashback with Metacity is the supported
+  # GNOME session that can use the X server supplied by Termux:X11.
+  services.desktopManager.gnome.flashback.enableMetacity = true;
+
+  # Termux:X11 is the X server. Do not start GDM or a second Xorg server in the
+  # DroidSpaces container.
+  services.displayManager.gdm.enable = false;
+  services.xserver.enable = false;
+
+  # Android/DroidSpaces owns these host-level facilities.
+  networking.networkmanager.enable = lib.mkForce false;
+  hardware.bluetooth.enable = lib.mkForce false;
+  powerManagement.enable = lib.mkForce false;
+  services.avahi.enable = lib.mkForce false;
+  services.geoclue2.enable = lib.mkForce false;
+  services.gnome.gnome-initial-setup.enable = lib.mkForce false;
+  services.gnome.gnome-remote-desktop.enable = lib.mkForce false;
+  services.gnome.gnome-user-share.enable = lib.mkForce false;
+  services.gnome.rygel.enable = lib.mkForce false;
+  services.hardware.bolt.enable = lib.mkForce false;
+  services.power-profiles-daemon.enable = lib.mkForce false;
+
+  environment.systemPackages = with pkgs; [
+    gnomeTermuxSession
+    startGnome
+    stopGnome
+    xterm
+  ];
+
+  systemd.user.services.gnome-termux-x11 = {
+    description = "GNOME Flashback session on Termux:X11";
+    after = [ "dbus.socket" ];
+    wants = [ "dbus.socket" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = lib.getExe gnomeTermuxSession;
+      Restart = "no";
+    };
+  };
+}
