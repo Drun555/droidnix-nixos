@@ -25,6 +25,12 @@ let
       pkgs.systemd
     ];
     text = ''
+      profile_user="''${USER:-$(id -un)}"
+      export PATH="/run/current-system/sw/bin:/etc/profiles/per-user/$profile_user/bin:$PATH"
+      export XDG_CONFIG_DIRS="/etc/xdg:/run/current-system/sw/etc/xdg''${XDG_CONFIG_DIRS:+:$XDG_CONFIG_DIRS}"
+      export XDG_DATA_DIRS="/run/current-system/sw/share:/etc/profiles/per-user/$profile_user/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+      export XDG_MENU_PREFIX="gnome-flashback-"
+
       systemctl --user import-environment \
         DBUS_SESSION_BUS_ADDRESS \
         GI_TYPELIB_PATH \
@@ -33,6 +39,7 @@ let
         PATH \
         XDG_CONFIG_DIRS \
         XDG_DATA_DIRS \
+        XDG_MENU_PREFIX \
         XDG_RUNTIME_DIR 2>/dev/null || true
 
       systemctl --user restart gnome-termux-x11.service
@@ -108,9 +115,10 @@ in
     "/share/icons"
   ];
 
-  xdg.mime.defaultApplications."inode/directory" = [
-    "org.gnome.Nautilus.desktop"
-  ];
+  xdg.mime.defaultApplications = {
+    "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
+    "x-scheme-handler/file" = [ "org.gnome.Nautilus.desktop" ];
+  };
 
   systemd.user.services.gnome-termux-x11 = {
     description = "GNOME Flashback session on Termux:X11";

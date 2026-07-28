@@ -1,5 +1,11 @@
 set -euo pipefail
 
+profile_user="${USER:-$(id -un)}"
+export PATH="/run/current-system/sw/bin:/etc/profiles/per-user/$profile_user/bin:$PATH"
+export XDG_CONFIG_DIRS="/etc/xdg:/run/current-system/sw/etc/xdg${XDG_CONFIG_DIRS:+:$XDG_CONFIG_DIRS}"
+export XDG_DATA_DIRS="/run/current-system/sw/share:/etc/profiles/per-user/$profile_user/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+export XDG_MENU_PREFIX="gnome-flashback-"
+
 if [[ -z "${DISPLAY:-}" ]]; then
   socket="$(
     # Android-owned Unix sockets are not reliably matched by GNU find's
@@ -81,6 +87,9 @@ systemctl --user import-environment \
   QT_SCALE_FACTOR \
   XCURSOR_SIZE \
   XDG_CURRENT_DESKTOP \
+  XDG_CONFIG_DIRS \
+  XDG_DATA_DIRS \
+  XDG_MENU_PREFIX \
   XDG_RUNTIME_DIR \
   XDG_SESSION_DESKTOP \
   XDG_SESSION_TYPE
@@ -94,6 +103,9 @@ dbus-update-activation-environment --systemd \
   QT_SCALE_FACTOR \
   XCURSOR_SIZE \
   XDG_CURRENT_DESKTOP \
+  XDG_CONFIG_DIRS \
+  XDG_DATA_DIRS \
+  XDG_MENU_PREFIX \
   XDG_RUNTIME_DIR \
   XDG_SESSION_DESKTOP \
   XDG_SESSION_TYPE
